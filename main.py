@@ -6,6 +6,15 @@ from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator  # <--- 1. Importar el instrumentador
 import logging
 
+# =========================================================
+# CAMBIO 1: Importamos las herramientas de OpenTelemetry
+# =========================================================
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
 
 # ---------------------------------------------------------
 # NUEVO: Definimos la estructura del objeto para recargar stock
@@ -25,10 +34,24 @@ logger = logging.getLogger("cafeteria-api")
 # 1. SQLAlchemy crea automáticamente las tablas en PostgreSQL basándose en nuestras clases
 Base.metadata.create_all(bind=engine)
 
+# =========================================================
+# CAMBIO 2: Le decimos a Python que envíe las trazas al contenedor "tempo" por el puerto 4317
+# =========================================================
+provider = TracerProvider()
+processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="tempo:4317", insecure=True))
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+
 app = FastAPI()
 
 # <--- 2. Inicializar y exponer las métricas para Prometheus automáticamente
 Instrumentator().instrument(app).expose(app)
+
+# =========================================================
+# CAMBIO 3: Activamos la captura automática de trazas para FastAPI
+# =========================================================
+FastAPIInstrumentor.instrument_app(app)
+
 
 # 2. Apenas arranca la app, nos aseguramos de que exista el producto 'Cafe' con stock inicial
 @app.on_event("startup")

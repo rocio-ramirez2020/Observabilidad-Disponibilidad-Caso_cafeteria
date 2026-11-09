@@ -6,7 +6,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # 3. Instalamos FastAPI y Uvicorn (el servidor web)
-RUN pip install --no-cache-dir fastapi uvicorn psycopg2-binary sqlalchemy prometheus-fastapi-instrumentator
+RUN pip install --no-cache-dir fastapi uvicorn psycopg2-binary sqlalchemy prometheus-fastapi-instrumentator opentelemetry-api opentelemetry-sdk opentelemetry-instrumentation-fastapi opentelemetry-exporter-otlp-proto-grpc
 
 # 4. Copiamos nuestro archivo main.py de la compu adentro de la cajita
 COPY . .
