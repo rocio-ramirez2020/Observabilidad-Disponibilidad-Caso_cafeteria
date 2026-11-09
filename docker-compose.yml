@@ -15,14 +15,13 @@ services:
   # Primera réplica de nuestra API de stock
   stock-replica-1:
     build: .
-    restart: unless-stopped
+    restart: always
     ports:
       - "8001:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+    environment:
+      - DATABASE_URL=postgresql://admin:password123@postgres:5432/cafeteria_db
+    depends_on:
+      - postgres
     networks:
       - red-cafeteria
 
@@ -70,6 +69,8 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+    volumes:
+      - grafana-storage:/var/lib/grafana
     networks:
       - red-cafeteria
 
@@ -91,3 +92,5 @@ services:
 networks:
   red-cafeteria:
     driver: bridge
+volumes:
+  grafana-storage:
