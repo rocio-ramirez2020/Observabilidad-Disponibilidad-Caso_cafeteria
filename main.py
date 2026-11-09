@@ -6,6 +6,14 @@ from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator  # <--- 1. Importar el instrumentador
 import logging
 
+
+# ---------------------------------------------------------
+# NUEVO: Definimos la estructura del objeto para recargar stock
+# ---------------------------------------------------------
+class RecargaStock(BaseModel):
+    cantidad: int
+
+
 # Configuramos cómo queremos que se vean los logs en la consola
 logging.basicConfig(
     level=logging.INFO,

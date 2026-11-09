@@ -9,6 +9,8 @@ services:
     ports:
       - "5432:5432"
     restart: always
+    networks:
+      - red-cafeteria
 
   # Primera réplica de nuestra API de stock
   stock-replica-1:
@@ -21,6 +23,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - red-cafeteria
 
   # Segunda réplica de nuestra API de stock
   stock-replica-2:
@@ -32,6 +36,8 @@ services:
     depends_on:
       - postgres
     restart: always
+    networks:
+      - red-cafeteria
 
   # El Balanceador de Carga (NGINX)
   nginx:
@@ -44,6 +50,8 @@ services:
       - stock-replica-1
       - stock-replica-2
     restart: always
+    networks:
+      - red-cafeteria
 
   prometheus:
     image: prom/prometheus:latest
@@ -52,6 +60,8 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - red-cafeteria
 
   grafana:
     image: grafana/grafana:latest
@@ -60,9 +70,11 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+    networks:
+      - red-cafeteria
+
   loki:
     image: grafana/loki:latest
-    # Borramos por completo las líneas de "ports:" para que no pelee con Windows
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - red-cafeteria
